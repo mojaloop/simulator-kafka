@@ -1,0 +1,26 @@
+{
+  "name": "simulator-kafka",
+  "version": "9.5.0",
+  "description": "mojaloop dfsp simulator tool that skips the http requests and works on kafka level",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mojaloop",
+    "simulator",
+    "kafka"
+  ],
+  "author": "Valentin Genev <valentin.genev@modusbox.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@hapi/hapi": "^19.1.1",
+    "@mojaloop/central-services-error-handling": "^9.1.0",
+    "@mojaloop/central-services-logger": "^9.1.0",
+    "@mojaloop/central-services-metrics": "^9.1.0",
+    "@mojaloop/central-services-shared": "^9.4.1",
+    "@mojaloop/central-services-stream": "^9.2.0",
+    "@mojaloop/event-sdk": "^9.4.1",
+    "commander": "^5.0.0"
+  }
+}
