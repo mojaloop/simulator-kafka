@@ -1,5 +1,5 @@
 {
-  "name": "simulator-kafka",
+  "name": "simulated-message-handler",
   "version": "9.5.0",
   "description": "mojaloop dfsp simulator tool that skips the http requests and works on kafka level",
   "main": "src/index.js",

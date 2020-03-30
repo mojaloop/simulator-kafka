@@ -1,8 +1,6 @@
 {
-    "PORT": 3000,
-    "HOSTNAME": "http://ml-api-adapter",
-    "ENDPOINT_SOURCE_URL": "http://localhost:3001",
-    "ENDPOINT_HEALTH_URL": "http://localhost:3001/health",
+    "PORT": 6868,
+    "HOSTNAME": "localhost",
     "ENDPOINT_CACHE_CONFIG": {
       "expiresIn": 180000,
       "generateTimeout": 30000
@@ -67,7 +65,7 @@
               "rdkafkaConf": {
                 "client.id": "ml-con-notification-event",
                 "group.id": "ml-group-notification-event",
-                "metadata.broker.list": "localhost:9092",
+                "metadata.broker.list": "host.docker.internal:39092",
                 "socket.keepalive.enable": true
               },
               "topicConf": {
@@ -85,7 +83,7 @@
                 "messageCharset": "utf8"
               },
               "rdkafkaConf": {
-                "metadata.broker.list": "localhost:9092",
+                "metadata.broker.list": "host.docker.internal:39092",
                 "client.id": "ml-prod-transfer-prepare",
                 "event_cb": true,
                 "dr_cb": true,
@@ -104,7 +102,7 @@
                 "messageCharset": "utf8"
               },
               "rdkafkaConf": {
-                "metadata.broker.list": "localhost:9092",
+                "metadata.broker.list": "host.docker.internal:39092",
                 "client.id": "ml-prod-transfer-fulfil",
                 "event_cb": true,
                 "dr_cb": true,
@@ -123,7 +121,7 @@
                 "messageCharset": "utf8"
               },
               "rdkafkaConf": {
-                "metadata.broker.list": "localhost:9092",
+                "metadata.broker.list": "host.docker.internal:39092",
                 "client.id": "ml-prod-transfer-get",
                 "event_cb": true,
                 "dr_cb": true,
