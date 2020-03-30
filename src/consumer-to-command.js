@@ -41,6 +41,8 @@ const Commands = require('./commands')
 let notificationConsumer = {}
 let autoCommitEnabled = true
 
+const LOG_ENABLED = false
+
 const recordTxMetrics = (t_api_prepare, t_api_fulfil, success) => {
   const endTime = Date.now()
   if (t_api_prepare && !t_api_fulfil) {
@@ -267,11 +269,11 @@ const processMessage = async (msg, span) => {
     } catch (err) {
       Logger.error(err)
       Logger.error(`[cid=${id}, fsp=${from}, source=${from}, dest=${to}] ~ ML-Notification::prepare::message - END`)
-      histTimerEndSendRequest({ success: false, from, dest: to, action, status: 'NOTOK' })
+      histTimerEndSendRequest({ success: false, from, dest: to, action, status: 'failed' })
       histTimerEnd({ success: false, action })
       throw err
     }
-    histTimerEndSendRequest({ success: true, from, dest: to, action, status: 'NOTOK' })
+    histTimerEndSendRequest({ success: true, from, dest: to, action, status: 'failed' })
     Logger.error(`[cid=${id}, fsp=${from}, source=${from}, dest=${to}] ~ ML-Notification::prepare::message - END`)
     histTimerEnd({ success: true, action })
     return true

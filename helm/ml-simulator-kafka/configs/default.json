@@ -32,14 +32,16 @@
       },
       "INSTRUMENTATION": {
         "METRICS": {
-          "DISABLED": false,
-          "config": {
-            "timeout": 5000,
-            "prefix": "moja_",
-            "defaultLabels": {
-              "serviceName": "simulated-message-handler"
+            "DISABLED": {{ not .Values.metrics.enabled }},
+            "config": {
+                "timeout": {{ .Values.metrics.config.timeout }},
+                "prefix": {{ .Values.metrics.config.prefix | quote }},
+                "defaultLabels": {
+                {{- range $key, $value := .Values.metrics.config.defaultLabels }}
+                    {{ $key  | quote }}: {{ $value | quote }}
+                {{- end }}
+                }
             }
-          }
         }
       },
       "KAFKA": {
@@ -65,7 +67,7 @@
                 },
                 "rdkafkaConf": {
                   "client.id": "simmsg-con-notification-event",
-                  "group.id": "simmsg-group-notification-event",
+                  "group.id": "ml-group-notification-event",
                   "metadata.broker.list": "{{ (default .Values.config.kafka_host $kafkaHost) }}:{{ .Values.config.kafka_port }}",
                   "queue.buffering.max.messages": 100,
                   "queue.buffering.max.ms": 50,
