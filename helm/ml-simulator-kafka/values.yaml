@@ -28,7 +28,7 @@ tolerations:
 replicaCount: 1
 image:
   repository: chinchillah/simulated-message-handler
-  tag: v0.2
+  tag: v0.3
   pullPolicy: Always
   command: "node src/index.js connect --type notification --action event"
   env: {}

@@ -273,7 +273,7 @@ const processMessage = async (msg, span) => {
       histTimerEnd({ success: false, action })
       throw err
     }
-    histTimerEndSendRequest({ success: true, from, dest: to, action, status: 'failed' })
+    histTimerEndSendRequest({ success: true, from, dest: to, action, status: 'success' })
     Logger.error(`[cid=${id}, fsp=${from}, source=${from}, dest=${to}] ~ ML-Notification::prepare::message - END`)
     histTimerEnd({ success: true, action })
     return true
@@ -299,8 +299,10 @@ const processMessage = async (msg, span) => {
     //   histTimerEnd({ success: false, action })
     //   throw err
     // }
-    histTimerEndSendRequest({ success: true, from, dest: to, action,  status: response.status })
+    histTimerEndSendRequest({ success: true, from, dest: to, action,  status: 'success' })
     Logger.error(`[cid=${id}, fsp=${from}, source=${from}, dest=${to}] ~ ML-Notification::commit::message1 - END`)
+    histTimerEnd({ success: true, action })
+    return true
   }
   return true
 }
