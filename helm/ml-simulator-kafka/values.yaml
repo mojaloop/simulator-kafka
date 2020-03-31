@@ -28,7 +28,7 @@ tolerations:
 replicaCount: 1
 image:
   repository: chinchillah/simulated-message-handler
-  tag: v0.3
+  tag: v0.6
   pullPolicy: Always
   command: "node src/index.js connect --type notification --action event"
   env: {}
@@ -129,6 +129,8 @@ config:
   # kafka_host: '$release_name-kafka'
   kafka_host: 'back-kafka'
   kafka_port: 9092
+  kafka_partitioner: 'random'
+  kafka_autocommit_interval_ms: 100
   producer:
     host: "localhost"
     port: 6868
@@ -143,8 +145,16 @@ config:
   # log_level: error
   log_level: info
   log_filter: 'error, warn, info'
+  
+  ## Tracing Configuration
+  event_trace_vendor: mojaloop
   event_log_filter: ''
-  event_log_metadata_only: true
+  # If set to true, only the metadata object from the event will be printed.
+  event_log_metadata_only: false
+  # A comma-separated list of events that should return immediately instead of waiting for the event promises to resolve
+  # Any combination of: `log,audit,trace`
+  event_async_override: 'log,trace'
+  event_traceid_per_vendor: false
 
 kafka:
   enabled: false

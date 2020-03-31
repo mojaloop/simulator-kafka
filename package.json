@@ -15,12 +15,12 @@
   "license": "MIT",
   "dependencies": {
     "@hapi/hapi": "^19.1.1",
-    "@mojaloop/central-services-error-handling": "^9.1.0",
-    "@mojaloop/central-services-logger": "^9.1.0",
-    "@mojaloop/central-services-metrics": "^9.1.0",
-    "@mojaloop/central-services-shared": "^9.4.1",
-    "@mojaloop/central-services-stream": "^9.2.0",
-    "@mojaloop/event-sdk": "^9.4.1",
-    "commander": "^5.0.0"
+    "@mojaloop/central-services-error-handling": "9.1.0",
+    "@mojaloop/central-services-logger": "9.1.0",
+    "@mojaloop/central-services-metrics": "9.1.0",
+    "@mojaloop/central-services-shared": "9.5.0-snapshot.1",
+    "@mojaloop/central-services-stream": "9.2.0",
+    "@mojaloop/event-sdk": "9.4.1",
+    "commander": "5.0.0"
   }
 }

@@ -105,11 +105,11 @@ const fulfil = async (headers, dataUri, payload, params, span) => {
     Logger.debug(`domain::transfer::fulfil::messageProtocol - ${messageProtocol}`)
     Logger.debug(`domain::transfer::fulfil::topicConfig - ${topicConfig}`)
     Logger.debug(`domain::transfer::fulfil::kafkaConfig - ${kafkaConfig}`)
-    await span.debug({
-      messageProtocol,
-      topicName: topicConfig.topicName,
-      clientId: kafkaConfig.rdkafkaConf['client.id']
-    })
+    // await span.debug({
+    //   messageProtocol,
+    //   topicName: topicConfig.topicName,
+    //   clientId: kafkaConfig.rdkafkaConf['client.id']
+    // })
     messageProtocol = await span.injectContextToMessage(messageProtocol)
     await Kafka.Producer.produceMessage(messageProtocol, topicConfig, kafkaConfig)
     return true

@@ -1,79 +1,160 @@
 {{- $kafkaHost := ( .Values.config.kafka_host | replace "$release_name" .Release.Name ) -}}
+{{- $centralServicesHost := ( .Values.config.central_services_host | replace "$release_name" .Release.Name ) -}}
 {
-    "PRODUCER": {
-        "HOSTNAME": "{{ .Values.config.producer.host }}",
-        "PORT": {{ .Values.config.producer.port }},
-        "KAFKA": {
-            "topics": [
-                "{{ .Values.config.topics }}"
-            ],
-            "configs": {
-                "options": {
-                    "pollIntervalMs": 10,
-                    "messageCharset": "utf8"
-                },
-                "rdkafkaConf": {
-                    "metadata.broker.list": "{{ (default .Values.config.kafka_host $kafkaHost) }}:{{ .Values.config.kafka_port }}",
-                    "client.id": "producer1",
-                    "event_cb": true,
-                    "compression.codec": "none",
-                    "retry.backoff.ms": 100,
-                    "message.send.max.retries": 2,
-                    "socket.keepalive.enable": true,
-                    "queue.buffering.max.messages": 4000000,
-                    "queue.buffering.max.ms": 50,
-                    "queue.buffering.max.kbytes": 20000000,
-                    "batch.num.messages": 1,
-                    "api.version.request": true,
-                    "dr_cb": true,
-                    "statistics.interval.ms": {{ .Values.config.statistics.intervalMs }}
-                },
-                "topicConf": {
-                    "request.required.acks": 1
-                }
-            }
+    "PORT": {{ .Values.service.internalPort }},
+    "ENDPOINT_SOURCE_URL": "http://{{ $centralServicesHost }}:{{ .Values.config.central_services_port }}",
+    "ENDPOINT_HEALTH_URL": "http://{{ $centralServicesHost }}:{{ .Values.config.central_services_port }}{{ .Values.config.central_services_health_endpoint_param }}",
+    "ENDPOINT_CACHE_CONFIG": {
+        "expiresIn": {{ .Values.config.endpoint_cache_expiresInMs }},
+        "generateTimeout": {{ .Values.config.endpoint_cache_generateTimeoutMs }}
+    },
+    "ENDPOINT_SECURITY":{
+        "TLS": {
+            "rejectUnauthorized": {{ .Values.config.security.callback.rejectUnauthorized }}
         }
     },
-    "CONSUMER": {
-        "HOSTNAME": "{{ .Values.config.consumer.host }}",
-        "PORT": {{ .Values.config.consumer.port }},
-        "KAFKA": {
-            "topics": [
-                "{{ .Values.config.topics }}"
-            ],
-            "configs": {
-                "options": {
-                    "mode": 2,
-                    "batchSize": 1,
-                    "recursiveTimeout": 100,
-                    "messageCharset": "utf8",
-                    "messageAsJSON": true,
-                    "sync": true,
-                    "consumeTimeout": 1000
-                },
-                "rdkafkaConf": {
-                    "client.id": "consumer1",
-                    "group.id": "group1",
-                    "metadata.broker.list": "{{ (default .Values.config.kafka_host $kafkaHost) }}:{{ .Values.config.kafka_port }}",
-                    "queue.buffering.max.messages": 100,
-                    "queue.buffering.max.ms": 50,
-                    "enable.auto.commit": true,
-                    "statistics.interval.ms": {{ .Values.config.statistics.intervalMs }}
-                },
-                "topicConf": {
-                    "auto.offset.reset": "beginning"
-                }
-            }
+    "HOSTNAME": "{{ .Values.ingress.hosts.api }}",
+    "MAX_CALLBACK_TIME_LAG_DILATION_MILLISECONDS": {{ .Values.config.max_callback_time_lag_dilation_milliseconds }},
+    "MAX_FULFIL_TIMEOUT_DURATION_SECONDS": {{ .Values.config.max_fulfil_timeout_duration_seconds }},
+    "TRANSFERS": {
+        "SEND_TRANSFER_CONFIRMATION_TO_PAYEE": {{ .Values.config.send_transfer_confirmation_to_payee }}
+    },
+    "AMOUNT": {
+        "PRECISION": 18,
+        "SCALE": 4
+    },
+    "ERROR_HANDLING": {
+        "includeCauseExtension": {{ .Values.config.error_handling.include_cause_extension }},
+        "truncateExtensions": {{ .Values.config.error_handling.truncate_extensions }}
+    },
+    "HANDLERS": {
+        "DISABLED": false,
+        "API": {
+            "DISABLED": false
         }
     },
     "INSTRUMENTATION": {
         "METRICS": {
-            "DISABLED": false,
+            "DISABLED": {{ not .Values.metrics.enabled }},
             "config": {
-                "timeout": 5000,
-                "prefix": "moja_",
+                "timeout": {{ .Values.metrics.config.timeout }},
+                "prefix": {{ .Values.metrics.config.prefix | quote }},
                 "defaultLabels": {
-                    "serviceName": "central-services-stream"
+                {{- range $key, $value := .Values.metrics.config.defaultLabels }}
+                    {{ $key  | quote }}: {{ $value | quote }}
+                {{- end }}
+                }
+            }
+        }
+    },
+    "KAFKA": {
+        "TOPIC_TEMPLATES": {
+            "GENERAL_TOPIC_TEMPLATE": {
+                "TEMPLATE": "topic-{{"{{"}}functionality{{"}}"}}-{{"{{"}}action{{"}}"}}",
+                "REGEX": "topic-(.*)-(.*)"
+            },
+            "PARTICIPANT_TOPIC_TEMPLATE": {
+                "TEMPLATE": "topic-{{"{{"}}participantName{{"}}"}}-{{"{{"}}functionality{{"}}"}}-{{"{{"}}action{{"}}"}}",
+                "REGEX": "topic-(.*)-(.*)-(.*)"
+            },
+            "NOTIFICATION_TOPIC_TEMPLATE": {
+                "TEMPLATE": "topic-notification-event",
+                "REGEX": "topic-notification-event"
+            },
+            "FULFIL_TOPIC_TEMPLATE": {
+                "TEMPLATE": "topic-transfer-fulfil",
+                "REGEX": "topic-transfer-fulfil"
+            },
+            "GET_TRANSFERS_TOPIC_TEMPLATE": {
+                "TEMPLATE": "topic-transfer-get",
+                "REGEX": "topic-transfer-get"
+            }
+        },
+        "CONSUMER": {
+            "NOTIFICATION": {
+                "EVENT": {
+                    "config": {
+                        "options": {
+                            "mode": 2,
+                            "batchSize": 1,
+                            "recursiveTimeout": 100,
+                            "messageCharset": "utf8",
+                            "messageAsJSON": true,
+                            "sync": true,
+                            "consumeTimeout": 1000
+                        },
+                        "rdkafkaConf": {
+                            "client.id": "ml-con-notification-event",
+                            "group.id": "ml-group-notification-event",
+                            "metadata.broker.list": "{{ $kafkaHost }}:{{ .Values.config.kafka_port }}",
+                            "socket.keepalive.enable": true,
+                            "auto.commit.interval.ms": "{{ .Values.config.kafka_autocommit_interval_ms }}"
+                        },
+                        "topicConf": {
+                            "auto.offset.reset": "earliest"
+                        }
+                    }
+                }
+            }
+        },
+        "PRODUCER": {
+            "TRANSFER": {
+                "PREPARE": {
+                    "config": {
+                        "options": {
+                            "messageCharset": "utf8"
+                        },
+                        "rdkafkaConf": {
+                            "metadata.broker.list": "{{ $kafkaHost }}:{{ .Values.config.kafka_port }}",
+                            "client.id": "ml-prod-transfer-prepare",
+                            "event_cb": true,
+                            "dr_cb": false,
+                            "socket.keepalive.enable": true,
+                            "queue.buffering.max.messages": 10000000
+                        },
+                        "topicConf": {
+                            "request.required.acks": "all",
+                            "partitioner": "{{ .Values.config.kafka_partitioner }}"
+                        }
+                    }
+                },
+                "FULFIL": {
+                    "config": {
+                        "options": {
+                            "messageCharset": "utf8"
+                        },
+                        "rdkafkaConf": {
+                            "metadata.broker.list": "{{ $kafkaHost }}:{{ .Values.config.kafka_port }}",
+                            "client.id": "ml-prod-transfer-fulfil",
+                            "event_cb": true,
+                            "dr_cb": false,
+                            "socket.keepalive.enable": true,
+                            "queue.buffering.max.messages": 10000000
+                        },
+                        "topicConf": {
+                            "request.required.acks": "all",
+                            "partitioner": "{{ .Values.config.kafka_partitioner }}"
+                        }
+                    }
+                },
+                "GET": {
+                    "config": {
+                        "options": {
+                            "messageCharset": "utf8"
+                        },
+                        "rdkafkaConf": {
+                            "metadata.broker.list": "{{ $kafkaHost }}:{{ .Values.config.kafka_port }}",
+                            "client.id": "ml-prod-transfer-get",
+                            "event_cb": true,
+                            "dr_cb": false,
+                            "socket.keepalive.enable": true,
+                            "queue.buffering.max.messages": 10000000
+                        },
+                        "topicConf": {
+                            "request.required.acks": "all",
+                            "partitioner": "{{ .Values.config.kafka_partitioner }}"
+                        }
+                    }
                 }
             }
         }
