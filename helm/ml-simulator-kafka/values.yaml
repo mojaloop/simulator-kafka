@@ -131,8 +131,11 @@ config:
   kafka_port: 9092
   kafka_partitioner: 'random'
   kafka_autocommit_interval_ms: 100
-  central_services_host: '$release_name-centralledger-service'
+  central_services_host: 'back-centralledger-service'
+  # central_services_host: '$release_name-centralledger-service'
   central_services_port: 80
+  endpoint_cache_expiresInMs: 4000000
+  endpoint_cache_generateTimeoutMs: 30000
 
   producer:
     host: "localhost"
