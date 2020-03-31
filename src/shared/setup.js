@@ -34,6 +34,7 @@
 const Config = require('../lib/config')
 const Metrics = require('@mojaloop/central-services-metrics')
 const Api = require('../api')
+const Endpoints = require('@mojaloop/central-services-shared').Util.Endpoints
 
 const initInstrumentation = async () => {
   if (!Config.INSTRUMENTATION_METRICS_DISABLED) {
@@ -57,6 +58,7 @@ const initAPI = async (hostname, port, apiDisabled) => {
  */
 const init = async (hostname, port, apiDisabled = true) => {
   await initInstrumentation()
+  await Endpoints.initializeCache(Config.ENDPOINT_CACHE_CONFIG)
   await initAPI(hostname, port, apiDisabled)
 }
 

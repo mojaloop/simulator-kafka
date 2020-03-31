@@ -37,7 +37,7 @@ const { decodePayload, isDataUri } = require('@mojaloop/central-services-shared'
 const { createCallbackHeaders } = require('./lib/headers')
 const Config = require('./lib/config')
 const Commands = require('./commands')
-
+const Participant = require('./domain/participant')
 let notificationConsumer = {}
 let autoCommitEnabled = true
 
@@ -256,32 +256,34 @@ const processMessage = async (msg, span) => {
   }
 
   if (actionLower === ENUM.Events.Event.Action.PREPARE && statusLower === ENUM.Events.EventStatus.SUCCESS.status) {
+    const callbackURLTo = await Participant.getEndpoint(to, ENUM.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_TRANSFER_POST, id, span)
+    callbackHeaders = createCallbackHeaders({ dfspId: to, transferId: id, headers: content.headers, httpMethod: ENUM.Http.RestMethods.PUT, endpointTemplate: ENUM.EndPoints.FspEndpointTemplates.TRANSFERS_PUT_ERROR }, fromSwitch)
+    !!LOG_ENABLED && Logger.debug(`Notification::processMessage - Callback.sendRequest(${callbackURLTo}, ${ENUM.Http.RestMethods.POST}, ${JSON.stringify(content.headers)}, ${payloadForCallback}, ${id}, ${from}, ${to})`)
+    Logger.error(`[cid=${id}, fsp=${from}, source=${from}, dest=${to}] ~ ML-Notification::prepare::message - START`)
+    let response = { status: 'unknown' }
     const histTimerEndSendRequest = Metrics.getHistogram(
       'notification_event_delivery',
       'notification_event_delivery - metric for sending notification requests to FSPs',
       ['success', 'from', 'to', 'dest', 'action', 'status']
     ).startTimer()
-    //
-    Logger.error(`[cid=${id}, fsp=${from}, source=${from}, dest=${to}] ~ ML-Notification::prepare::message - START`)
     try {
-      callbackHeaders = createCallbackHeaders({ dfspId: to, transferId: id, headers: content.headers, httpMethod: ENUM.Http.RestMethods.PUT, endpointTemplate: ENUM.EndPoints.FspEndpointTemplates.TRANSFERS_PUT_ERROR }, fromSwitch)
       await Commands.produceFulfilMessage(callbackHeaders, payloadForCallback, ENUM.Http.RestMethods.PUT, from, to, span)
     } catch (err) {
       Logger.error(err)
       Logger.error(`[cid=${id}, fsp=${from}, source=${from}, dest=${to}] ~ ML-Notification::prepare::message - END`)
-      histTimerEndSendRequest({ success: false, from, dest: to, action, status: 'failed' })
+      histTimerEndSendRequest({ success: false, from, dest: to, action, status: response.status })
       histTimerEnd({ success: false, action })
       throw err
     }
-    histTimerEndSendRequest({ success: true, from, dest: to, action, status: 'success' })
+    histTimerEndSendRequest({ success: true, from, dest: to, action, status: 'success',  status: response.status })
     Logger.error(`[cid=${id}, fsp=${from}, source=${from}, dest=${to}] ~ ML-Notification::prepare::message - END`)
     histTimerEnd({ success: true, action })
     return true
   }
 
   if (actionLower === ENUM.Events.Event.Action.COMMIT && statusLower === ENUM.Events.EventStatus.SUCCESS.status) {
-    // const callbackURLTo = await Participant.getEndpoint(to, ENUM.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_TRANSFER_PUT, id, span)
-    // callbackHeaders = createCallbackHeaders({ dfspId: to, transferId: id, headers: content.headers, httpMethod: ENUM.Http.RestMethods.PUT, endpointTemplate: ENUM.EndPoints.FspEndpointTemplates.TRANSFERS_PUT })
+    const callbackURLTo = await Participant.getEndpoint(to, ENUM.EndPoints.FspEndpointTypes.FSPIOP_CALLBACK_URL_TRANSFER_PUT, id, span)
+    callbackHeaders = createCallbackHeaders({ dfspId: to, transferId: id, headers: content.headers, httpMethod: ENUM.Http.RestMethods.PUT, endpointTemplate: ENUM.EndPoints.FspEndpointTemplates.TRANSFERS_PUT })
     // forward the fulfil to the destination
     !!LOG_ENABLED && Logger.debug(`Notification::processMessage - Callback.sendRequest(${callbackURLTo}, ${ENUM.Http.RestMethods.PUT}, ${JSON.stringify(callbackHeaders)}, ${payloadForCallback}, ${id}, ${from}, ${to})`)
     Logger.error(`[cid=${id}, fsp=${from}, source=${from}, dest=${to}] ~ ML-Notification::commit::message1 - START`)

@@ -1,6 +1,8 @@
 {
     "PORT": 6868,
     "HOSTNAME": "localhost",
+    "ENDPOINT_SOURCE_URL": "http://localhost:3001",
+    "ENDPOINT_HEALTH_URL": "http://localhost:3001/health",  
     "ENDPOINT_CACHE_CONFIG": {
       "expiresIn": 180000,
       "generateTimeout": 30000
