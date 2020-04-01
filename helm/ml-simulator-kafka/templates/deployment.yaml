@@ -57,7 +57,11 @@ spec:
               value: {{ $envItem.value }}
           {{- end }}
         {{- end }}
-
+      dnsConfig:
+        options:
+        - name: attempts
+          value: "2"
+      dnsPolicy: ClusterFirst
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

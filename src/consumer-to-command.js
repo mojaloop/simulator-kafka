@@ -301,7 +301,7 @@ const processMessage = async (msg, span) => {
     //   histTimerEnd({ success: false, action })
     //   throw err
     // }
-    histTimerEndSendRequest({ success: true, from, dest: to, action,  status: 'success' })
+    histTimerEndSendRequest({ success: true, from, dest: to, action,  status: response.status })
     Logger.error(`[cid=${id}, fsp=${from}, source=${from}, dest=${to}] ~ ML-Notification::commit::message1 - END`)
     histTimerEnd({ success: true, action })
     return true
